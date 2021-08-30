@@ -74,6 +74,7 @@ const markerObject = {
       w: 1,
     },
   },
+  relatedMessage: "/objects{id=12345}",
 };
 
 const interactiveMarkerObject = {
