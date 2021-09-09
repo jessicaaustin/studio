@@ -11,23 +11,17 @@
 //   found at http://www.apache.org/licenses/LICENSE-2.0
 //   You may not use this file except in compliance with the License.
 
-import styled from "styled-components";
-
 import { usePanelContext } from "@foxglove/studio-base/components/PanelContext";
 import Tooltip from "@foxglove/studio-base/components/Tooltip";
 import { PanelConfig } from "@foxglove/studio-base/types/panels";
 import { colors } from "@foxglove/studio-base/util/sharedStyleConstants";
 
-const STopicLink = styled.span`
-  cursor: pointer;
-  color: ${colors.HIGHLIGHT};
-`;
-
 type Props = {
   topic: string;
+  variant?: "topic" | "caption";
 };
 
-export default function TopicLink({ topic }: Props): JSX.Element {
+export default function TopicLink({ topic, variant = "topic" }: Props): JSX.Element {
   const { openSiblingPanel } = usePanelContext();
   const openRawMessages = React.useCallback(() => {
     openSiblingPanel("RawMessages", (config: PanelConfig) => ({
@@ -36,11 +30,13 @@ export default function TopicLink({ topic }: Props): JSX.Element {
     }));
   }, [openSiblingPanel, topic]);
 
+  const color = variant === "topic" ? colors.HIGHLIGHT : colors.HIGHLIGHT_MUTED;
+
   return (
     <Tooltip placement="top" contents={`View ${topic} in Raw Messages panel`}>
       {/* extra span to work around tooltip NaN positioning bug */}
-      <span>
-        <STopicLink onClick={openRawMessages}>{topic}</STopicLink>
+      <span style={{ cursor: "pointer", color }} onClick={openRawMessages}>
+        {topic}
       </span>
     </Tooltip>
   );

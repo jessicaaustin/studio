@@ -12,6 +12,7 @@
 //   You may not use this file except in compliance with the License.
 
 import CursorDefault from "@mdi/svg/svg/cursor-default.svg";
+import { useMemo } from "react";
 import { MouseEventObject } from "regl-worldview";
 
 import Checkbox from "@foxglove/studio-base/components/Checkbox";
@@ -71,6 +72,10 @@ const InteractionsBaseComponent = React.memo<PropsWithConfig>(function Interacti
   const { linkedGlobalVariables } = useLinkedGlobalVariables();
   const selectedInteractionData = selectedObject && getInteractionData(selectedObject);
 
+  const relatedMessage = useMemo(() => {
+    return selectedInteractionData?.originalMessage.relatedMessage as string;
+  }, [selectedInteractionData?.originalMessage]);
+
   return (
     <ExpandingToolbar
       tooltip="Inspect Objects"
@@ -91,6 +96,13 @@ const InteractionsBaseComponent = React.memo<PropsWithConfig>(function Interacti
                 <SRow>
                   <SValue>
                     <TopicLink topic={selectedInteractionData.topic} />
+                  </SValue>
+                </SRow>
+              )}
+              {relatedMessage && (
+                <SRow>
+                  <SValue>
+                    <TopicLink variant="caption" topic={relatedMessage} />
                   </SValue>
                 </SRow>
               )}
