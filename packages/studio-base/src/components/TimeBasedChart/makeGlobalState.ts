@@ -47,7 +47,9 @@ function makeGlobalState<T>(): (options: {
     }, []);
 
     useEffect(() => {
+      // when disabled the value gets set to undefined
       if (!enabled) {
+        setValue(undefined);
         return;
       }
 

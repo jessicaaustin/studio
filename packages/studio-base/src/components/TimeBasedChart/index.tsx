@@ -205,7 +205,8 @@ export default memo<Props>(function TimeBasedChart(props: Props) {
 
   const hoverBar = useRef<HTMLDivElement>(ReactNull);
 
-  const [globalBounds, setGlobalBounds] = useGlobalXBounds({ enabled: isSynced });
+  const [panLock, setPanLock] = useState(isSynced);
+  const [globalBounds, setGlobalBounds] = useGlobalXBounds({ enabled: panLock });
 
   const linesToHide = useMemo(() => props.linesToHide ?? {}, [props.linesToHide]);
 
@@ -268,7 +269,7 @@ export default memo<Props>(function TimeBasedChart(props: Props) {
       queueDownsampleInvalidate();
 
       // chart indicated we got a scales update, we may need to update global bounds
-      if (!isSynced || !scales?.x) {
+      if (!panLock || !scales?.x) {
         return;
       }
 
@@ -325,7 +326,7 @@ export default memo<Props>(function TimeBasedChart(props: Props) {
         };
       });
     },
-    [hasUserPannedOrZoomed, isSynced, queueDownsampleInvalidate, setGlobalBounds],
+    [hasUserPannedOrZoomed, panLock, queueDownsampleInvalidate, setGlobalBounds],
   );
 
   const onResetZoom = () => {
@@ -333,7 +334,7 @@ export default memo<Props>(function TimeBasedChart(props: Props) {
 
     // clearing the global bounds will make all panels reset to their data sets
     // which will cause all to re-sync to the min/max ranges for any panels without user interaction
-    if (isSynced) {
+    if (panLock) {
       if (defaultView?.type === "fixed") {
         setGlobalBounds({
           min: defaultView.minXValue,
@@ -529,7 +530,7 @@ export default memo<Props>(function TimeBasedChart(props: Props) {
   const { min: minX, max: maxX } = useMemo(() => {
     // if the user has manual override of the display, we remove the min/max settings and allow the chart
     // to handle the bounds
-    if (hasUserPannedOrZoomed) {
+    if (!panLock && hasUserPannedOrZoomed) {
       return { min: undefined, max: undefined };
     }
 
@@ -551,7 +552,7 @@ export default memo<Props>(function TimeBasedChart(props: Props) {
     // if we are syncing and have global bounds there are two possibilities
     // 1. the global bounds are from user interaction, we use that unconditionally
     // 2. the global bounds are min/max with our dataset bounds
-    if (isSynced && globalBounds) {
+    if (globalBounds) {
       if (globalBounds.userInteraction) {
         min = globalBounds.min;
         max = globalBounds.max;
@@ -576,7 +577,7 @@ export default memo<Props>(function TimeBasedChart(props: Props) {
     defaultView,
     globalBounds,
     hasUserPannedOrZoomed,
-    isSynced,
+    panLock,
   ]);
 
   const xScale = useMemo<ScaleOptions>(() => {
@@ -814,6 +815,10 @@ export default memo<Props>(function TimeBasedChart(props: Props) {
     onHover,
   };
 
+  const togglePanLock = useCallback(() => {
+    setPanLock((old) => !old);
+  }, []);
+
   useEffect(() => log.debug(`<TimeBasedChart> (datasetId=${datasetId})`), [datasetId]);
 
   // avoid rendering if width/height are 0 - usually on initial mount
@@ -839,13 +844,14 @@ export default memo<Props>(function TimeBasedChart(props: Props) {
             <ChartComponent {...chartProps} />
           </div>
 
-          {hasUserPannedOrZoomed && (
-            <SResetZoom>
+          <SResetZoom>
+            {hasUserPannedOrZoomed && (
               <Button tooltip="(shortcut: double-click)" onClick={onResetZoom}>
                 reset view
               </Button>
-            </SResetZoom>
-          )}
+            )}
+            <Button onClick={togglePanLock}>{panLock ? "Unlock Pan" : "Lock Pan"}</Button>
+          </SResetZoom>
           <KeyListener global keyDownHandlers={keyDownHandlers} keyUpHandlers={keyUphandlers} />
         </SRoot>
       </div>
