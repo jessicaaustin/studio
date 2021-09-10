@@ -794,6 +794,15 @@ export default function TimeBasedChart(props: Props): JSX.Element {
     ) : undefined;
   }, [activeTooltip]);
 
+  // reset is shown if we have sync lock and there has been user interaction, or if we don't
+  // have sync lock and the user has manually interacted with the plot
+  //
+  // The reason we check for pan lock is to remove reset display from all sync'd plots once
+  // the range has been reset.
+  const showReset = useMemo(() => {
+    return panLock ? globalBounds?.userInteraction === true : hasUserPannedOrZoomed;
+  }, [globalBounds?.userInteraction, hasUserPannedOrZoomed, panLock]);
+
   // We don't memo this since each option itself is memo'd and this is just convenience to pass to
   // the component.
   const chartProps: ChartComponentProps = {
@@ -837,7 +846,7 @@ export default function TimeBasedChart(props: Props): JSX.Element {
           </div>
 
           <SResetZoom>
-            {hasUserPannedOrZoomed && (
+            {showReset && (
               <Button tooltip="(shortcut: double-click)" onClick={onResetZoom}>
                 reset view
               </Button>
