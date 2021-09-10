@@ -142,6 +142,7 @@ const classes = mergeStyleSets({
   },
   toggleButton: {
     display: "flex",
+    alignItems: "center",
   },
   topicTimestamp: {
     padding: "0px 15px 0px 0px",
