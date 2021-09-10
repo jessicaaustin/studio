@@ -47,7 +47,7 @@ type State = {
   isOpen: boolean;
 };
 
-const styles = mergeStyleSets({
+const classes = mergeStyleSets({
   button: {
     display: "flex",
     maxWidth: "100%",
@@ -136,11 +136,11 @@ export default class Dropdown<T> extends React.Component<Props<T>, State> {
     const { isOpen } = this.state;
     const button = (
       <LegacyButton
-        className={cx(styles.button, btnClassname, { disabled })}
+        className={cx(classes.button, btnClassname, { disabled })}
         style={{ opacity: isOpen ? 1 : undefined, ...this.props.btnStyle }}
         data-test={this.props.dataTest}
       >
-        <span className={styles.title}>{text ?? value}</span>
+        <span className={classes.title}>{text ?? value}</span>
         <Icon style={{ marginLeft: 4 }}>
           <ChevronDownIcon style={{ width: 14, height: 14, opacity: 0.5 }} />
         </Icon>

@@ -140,6 +140,9 @@ const classes = mergeStyleSets({
     alignItems: "center",
     justifyContent: "center",
   },
+  toggleButton: {
+    display: "flex",
+  },
   topicTimestamp: {
     padding: "0px 15px 0px 0px",
     fontSize: 10,
@@ -186,7 +189,7 @@ const ToggleComponent = ({
   return (
     <LegacyButton
       style={{ maxWidth: "100%", padding: "4px 8px" }}
-      className={cx({ disabled })}
+      className={cx(classes.toggleButton, { disabled })}
       data-test={dataTest}
     >
       <span className={classes.dropdownTitle}>{text}</span>
