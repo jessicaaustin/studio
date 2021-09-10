@@ -51,20 +51,24 @@ const classes = mergeStyleSets({
     width: "100%",
     height: "100%",
     position: "relative",
+
+    "&:hover > [data-zoom-menu]": {
+      display: "block",
+    },
+    "&:hover > [data-magnify-icon]": {
+      display: "block",
+    },
   },
   magnify: {
-    position: "absolute",
+    position: "absolute !important",
     bottom: 5,
     left: 0,
     zIndex: 102,
     opacity: 1,
-    backgroundColor: colors.DARK3,
+    backgroundColor: `${colors.DARK3} !important`,
     display: "none",
 
-    // .root:hover & {
-    //   display: block;
-    // }
-    "&.hoverScreenshot": {
+    ".hoverScreenshot &": {
       display: "block",
     },
     svg: {
@@ -90,10 +94,7 @@ const classes = mergeStyleSets({
     borderRadius: "4%",
     display: "none",
 
-    // .root:hover & {
-    //   display: block;
-    // }
-    "&.hoverScreenshot": {
+    ".hoverScreenshot &": {
       display: "block",
     },
   },

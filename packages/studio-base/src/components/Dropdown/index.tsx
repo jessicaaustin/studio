@@ -23,7 +23,6 @@ import { colors } from "@foxglove/studio-base/util/sharedStyleConstants";
 import ChildToggle from "../ChildToggle";
 import Icon from "../Icon";
 import Menu, { Item } from "../Menu";
-// import styles from "./index.module.scss";
 
 type Props<T> = {
   children?: ReactNode;
