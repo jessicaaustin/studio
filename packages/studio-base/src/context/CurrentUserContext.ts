@@ -4,15 +4,28 @@
 
 import { createContext, useContext } from "react";
 
-export interface CurrentUser {
+export interface User {
   id: string;
-  orgId: string;
   email: string;
+  orgId: string;
+  orgDisplayName: string | null; // eslint-disable-line no-restricted-syntax
+  orgSlug: string;
+  orgPaid: boolean | null; // eslint-disable-line no-restricted-syntax
 }
 
-const CurrentUserContext = createContext<CurrentUser | undefined>(undefined);
+export interface CurrentUser {
+  currentUser: User | undefined;
+  setBearerToken: (token: string) => void;
+  signOut: () => Promise<void>;
+}
 
-export function useCurrentUser(): CurrentUser | undefined {
+const CurrentUserContext = createContext<CurrentUser>({
+  currentUser: undefined,
+  setBearerToken: () => {},
+  signOut: async () => {},
+});
+
+export function useCurrentUser(): CurrentUser {
   return useContext(CurrentUserContext);
 }
 
