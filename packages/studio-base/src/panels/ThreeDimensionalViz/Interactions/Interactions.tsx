@@ -73,7 +73,7 @@ const InteractionsBaseComponent = React.memo<PropsWithConfig>(function Interacti
   const selectedInteractionData = selectedObject && getInteractionData(selectedObject);
 
   const relatedMessage = useMemo(() => {
-    return selectedInteractionData?.originalMessage.relatedMessage as string;
+    return selectedInteractionData?.originalMessage?.relatedMessage as string;
   }, [selectedInteractionData?.originalMessage]);
 
   return (
