@@ -205,8 +205,7 @@ export default function TimeBasedChart(props: Props): JSX.Element {
 
   const hoverBar = useRef<HTMLDivElement>(ReactNull);
 
-  const [panLock, setPanLock] = useState(isSynced);
-  const [globalBounds, setGlobalBounds] = useGlobalXBounds({ enabled: panLock });
+  const [globalBounds, setGlobalBounds] = useGlobalXBounds({ enabled: isSynced });
 
   const linesToHide = useMemo(() => props.linesToHide ?? {}, [props.linesToHide]);
 
@@ -260,76 +259,6 @@ export default function TimeBasedChart(props: Props): JSX.Element {
     // Without a maxWait - invocations of the debounced invalidate reset the countdown
     // resulting in no invalidation when scales are constantly changing (playback)
     { leading: false, maxWait: 100 },
-  );
-
-  const updateScales = useCallback(
-    (scales: RpcScales, userInteraction: boolean) => {
-      currentScalesRef.current = scales;
-
-      queueDownsampleInvalidate();
-
-      // chart indicated we got a scales update, we may need to update global bounds
-      if (!panLock || !scales?.x) {
-        return;
-      }
-
-      // the change is a result of user interaction on our chart
-      // we definitely set the sync scale value so other charts follow our zoom/pan behavior
-      if (userInteraction) {
-        setGlobalBounds({
-          min: scales.x.min,
-          max: scales.x.max,
-          sourceId: componentId,
-          userInteraction: true,
-        });
-        return;
-      }
-
-      // the scales changed due to new data or another non-user initiated event
-      // the sync value is conditionally set depending on the state of the existing sync value
-      setGlobalBounds((old) => {
-        // no scale from our plot, always use old value
-        const xScale = scales?.x;
-        if (!xScale) {
-          return old;
-        }
-
-        // no old value for sync, initialize with our value
-        if (!old) {
-          return {
-            min: xScale.min,
-            max: xScale.max,
-            sourceId: componentId,
-            userInteraction: false,
-          };
-        }
-
-        // give preference to an old value set via user interaction
-        // note that updates due to _our_ user interaction are set earlier
-        if (old.userInteraction) {
-          return old;
-        }
-
-        // calculate min/max based on old value and our new scale
-        const newMin = Math.min(xScale.min, old.min);
-        const newMax = Math.max(xScale.max, old.max);
-
-        // avoid making a new sync object if the existing one matches our range
-        // avoids infinite set states
-        if (old.max === newMax && old.min === newMin) {
-          return old;
-        }
-
-        // existing value does not match our new range, update the global sync value
-        return {
-          min: newMin,
-          max: newMax,
-          sourceId: componentId,
-          userInteraction: false,
-        };
-      });
-    },
-    [componentId, panLock, queueDownsampleInvalidate, setGlobalBounds],
   );
 
   const onResetZoom = () => {
@@ -772,19 +701,73 @@ export default function TimeBasedChart(props: Props): JSX.Element {
         return;
       }
 
-      if (userInteraction) {
-        setHasUserPannedOrZoomed(true);
+      currentScalesRef.current = scales;
+
+      queueDownsampleInvalidate();
+
+      // chart indicated we got a scales update, we may need to update global bounds
+      if (!isSynced || !scales?.x) {
+        return;
       }
 
-      // fixme - boolean trap
-      updateScales(scales, userInteraction);
-    },
-    [isMounted, updateScales],
-  );
+      // the change is a result of user interaction on our chart
+      // we definitely set the sync scale value so other charts follow our zoom/pan behavior
+      if (userInteraction) {
+        setGlobalBounds({
+          min: scales.x.min,
+          max: scales.x.max,
+          sourceId: componentId,
+          userInteraction: true,
+        });
+        return;
+      }
 
-  const togglePanLock = useCallback(() => {
-    setPanLock((old) => !old);
-  }, []);
+      // the scales changed due to new data or another non-user initiated event
+      // the sync value is conditionally set depending on the state of the existing sync value
+      setGlobalBounds((old) => {
+        // no scale from our plot, always use old value
+        const scalesX = scales?.x;
+        if (!scalesX) {
+          return old;
+        }
+
+        // no old value for sync, initialize with our value
+        if (!old) {
+          return {
+            min: scalesX.min,
+            max: scalesX.max,
+            sourceId: componentId,
+            userInteraction: false,
+          };
+        }
+
+        // give preference to an old value set via user interaction
+        // note that updates due to _our_ user interaction are set earlier
+        if (old.userInteraction) {
+          return old;
+        }
+
+        // calculate min/max based on old value and our new scale
+        const newMin = Math.min(scalesX.min, old.min);
+        const newMax = Math.max(scalesX.max, old.max);
+
+        // avoid making a new sync object if the existing one matches our range
+        // avoids infinite set states
+        if (old.max === newMax && old.min === newMin) {
+          return old;
+        }
+
+        // existing value does not match our new range, update the global sync value
+        return {
+          min: newMin,
+          max: newMax,
+          sourceId: componentId,
+          userInteraction: false,
+        };
+      });
+    },
+    [componentId, isMounted, isSynced, queueDownsampleInvalidate, setGlobalBounds],
+  );
 
   useEffect(() => log.debug(`<TimeBasedChart> (datasetId=${datasetId})`), [datasetId]);
 
@@ -800,8 +783,8 @@ export default function TimeBasedChart(props: Props): JSX.Element {
   // The reason we check for pan lock is to remove reset display from all sync'd plots once
   // the range has been reset.
   const showReset = useMemo(() => {
-    return panLock ? globalBounds?.userInteraction === true : hasUserPannedOrZoomed;
-  }, [globalBounds?.userInteraction, hasUserPannedOrZoomed, panLock]);
+    return isSynced ? globalBounds?.userInteraction === true : hasUserPannedOrZoomed;
+  }, [globalBounds?.userInteraction, hasUserPannedOrZoomed, isSynced]);
 
   // We don't memo this since each option itself is memo'd and this is just convenience to pass to
   // the component.
@@ -851,7 +834,6 @@ export default function TimeBasedChart(props: Props): JSX.Element {
                 reset view
               </Button>
             )}
-            <Button onClick={togglePanLock}>{panLock ? "Unlock Pan" : "Lock Pan"}</Button>
           </SResetZoom>
           <KeyListener global keyDownHandlers={keyDownHandlers} keyUpHandlers={keyUphandlers} />
         </SRoot>
