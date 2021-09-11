@@ -89,6 +89,7 @@ type Config = {
   topicToRender: string;
   hardwareIdFilter: string;
   sortByLevel?: boolean;
+  excludeOk?: boolean;
 };
 type Props = {
   config: Config;
@@ -98,7 +99,7 @@ type Props = {
 function DiagnosticSummary(props: Props): JSX.Element {
   const { config, saveConfig } = props;
   const { topics } = useDataSourceInfo();
-  const { topicToRender, pinnedIds, hardwareIdFilter, sortByLevel = true } = config;
+  const { topicToRender, pinnedIds, hardwareIdFilter, sortByLevel = true, excludeOk = false } = config;
   const { openSiblingPanel } = usePanelContext();
 
   const togglePinned = useCallback(
@@ -184,14 +185,10 @@ function DiagnosticSummary(props: Props): JSX.Element {
     const sortedNodes = sortByLevel
       ? ([] as DiagnosticInfo[]).concat(
           ...levels.map((level) =>
-            filterAndSortDiagnostics(nodesByLevel.get(level) ?? [], hardwareIdFilter, pinnedIds),
+            filterAndSortDiagnostics(nodesByLevel.get(level) ?? [], hardwareIdFilter, excludeOk, pinnedIds),
           ),
         )
-      : filterAndSortDiagnostics(
-          ([] as DiagnosticInfo[]).concat(...nodesByLevel.values()),
-          hardwareIdFilter,
-          pinnedIds,
-        );
+      : filterAndSortDiagnostics(([] as DiagnosticInfo[]).concat(...nodesByLevel.values()), hardwareIdFilter, excludeOk, pinnedIds);
 
     const nodes: DiagnosticInfo[] = [...compact(pinnedNodes), ...sortedNodes];
     if (nodes.length === 0) {
@@ -212,7 +209,7 @@ function DiagnosticSummary(props: Props): JSX.Element {
         )}
       </AutoSizer>
     );
-  }, [diagnostics, hardwareIdFilter, pinnedIds, renderRow, sortByLevel, topicToRender]);
+  }, [diagnostics, hardwareIdFilter, pinnedIds, renderRow, sortByLevel, topicToRender, excludeOk]);
 
   return (
     <Flex col className={styles.panel}>
@@ -226,6 +223,7 @@ function DiagnosticSummary(props: Props): JSX.Element {
 
 const configSchema: PanelConfigSchema<Config> = [
   { key: "sortByLevel", type: "toggle", title: "Sort by level" },
+  { key: "excludeOk", type: "toggle", title: "Exclude diagnostics with OK status" },
 ];
 
 const defaultConfig: Config = {
@@ -233,6 +231,7 @@ const defaultConfig: Config = {
   hardwareIdFilter: "",
   topicToRender: DIAGNOSTIC_TOPIC,
   sortByLevel: true,
+  excludeOk: false,
 };
 export default Panel(
   Object.assign(DiagnosticSummary, {

@@ -129,11 +129,14 @@ export function getDiagnosticsByLevel(buffer: DiagnosticsBuffer): Map<number, Di
 }
 
 export const filterAndSortDiagnostics = (
-  nodes: DiagnosticInfo[],
-  hardwareIdFilter: string,
-  pinnedIds: DiagnosticId[],
-): DiagnosticInfo[] => {
-  const unpinnedNodes = nodes.filter(({ id }) => !pinnedIds.includes(id));
+    nodes: DiagnosticInfo[],
+    hardwareIdFilter: string,
+    excludeOk: boolean = false,
+    pinnedIds: DiagnosticId[]): DiagnosticInfo[] => {
+  let unpinnedNodes = nodes.filter(({ id }) => !pinnedIds.includes(id));
+  if (excludeOk) {
+     unpinnedNodes = nodes.filter(({ status }) => status.hardware_id && status.level != LEVELS.OK);
+  }
   if (hardwareIdFilter.length === 0) {
     return sortBy(unpinnedNodes, (info) => info.displayName.replace(/^\//, ""));
   }

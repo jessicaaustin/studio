@@ -133,9 +133,9 @@ describe("diagnostics", () => {
       if (!nodes) {
         throw new Error("Missing level OK");
       }
-      expect(filterAndSortDiagnostics(nodes, "", [])).toStrictEqual([mctmLogger, watchdogStatus]);
-      expect(filterAndSortDiagnostics(nodes, "watchdog", [])).toStrictEqual([watchdogStatus]);
-      expect(filterAndSortDiagnostics(nodes, "mctm_logger", [])).toStrictEqual([mctmLogger]);
+      expect(filterAndSortDiagnostics(nodes, "", false, [])).toStrictEqual([mctmLogger, watchdogStatus]);
+      expect(filterAndSortDiagnostics(nodes, "watchdog", false, [])).toStrictEqual([watchdogStatus]);
+      expect(filterAndSortDiagnostics(nodes, "mctm_logger", false, [])).toStrictEqual([mctmLogger]);
     });
 
     it("returns filtered nodes ordered by match quality", () => {
@@ -145,16 +145,12 @@ describe("diagnostics", () => {
       const subsequenceButPinnedDiagnostic = { ...mctmLogger, displayName: "12asdfg3456", id: "3" };
       const notSubsequenceDiagnostic = { ...mctmLogger, displayName: "12345", id: "4" };
       expect(
-        filterAndSortDiagnostics(
-          [
+        filterAndSortDiagnostics([
             subsequenceButPinnedDiagnostic,
             notSubsequenceDiagnostic,
             subsequenceDiagnostic,
             prefixDiagnostic,
-          ],
-          hardwareIdFilter,
-          ["3"],
-        ),
+        ], hardwareIdFilter, false, ["3"]),
       ).toEqual([prefixDiagnostic, subsequenceDiagnostic]);
     });
   });

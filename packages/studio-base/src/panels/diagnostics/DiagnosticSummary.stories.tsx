@@ -110,6 +110,22 @@ export function Filtered(): JSX.Element {
   );
 }
 
+export function FilteredByStatus(): JSX.Element {
+  return (
+    <PanelSetup fixture={fixture}>
+      <DiagnosticSummary
+        overrideConfig={{
+          pinnedIds: [],
+          topicToRender: "/diagnostics",
+          hardwareIdFilter: "",
+          excludeOk: true,
+          sortByLevel: false,
+        }}
+      />
+    </PanelSetup>
+  );
+}
+
 export function Settings(): JSX.Element {
   return (
     <SchemaEditor
