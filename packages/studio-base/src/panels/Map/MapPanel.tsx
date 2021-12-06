@@ -11,6 +11,7 @@ import {
   FeatureGroup,
   LayersControlEvent,
   LayerGroup,
+  geoJSON,
 } from "leaflet";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLatest } from "react-use";
@@ -176,6 +177,82 @@ function MapPanel(props: MapPanelProps): JSX.Element {
 
     // the map must be initialized with some view before other features work
     map.setView([0, 0], 10);
+
+    // User-specified geojson layer
+    // TODO: how to specify this in panel settings?
+    const brGeoJson : GeoJSON.FeatureCollection<any> = {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {},
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [
+                -122.42477416992186,
+                37.801374964252865
+              ],
+              [
+                -122.42082595825194,
+                37.7846897817763
+              ],
+              [
+                -122.4422836303711,
+                37.78292608704408
+              ]
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {},
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [
+                  -122.44314193725585,
+                  37.77342854582093
+                ],
+                [
+                  -122.43953704833984,
+                  37.76596533600783
+                ],
+                [
+                  -122.4264907836914,
+                  37.7694934927041
+                ],
+                [
+                  -122.42700576782227,
+                  37.77817746896081
+                ],
+                [
+                  -122.44314193725585,
+                  37.77342854582093
+                ]
+              ]
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "marker-color": "#7e7e7e",
+            "marker-size": "medium",
+            "marker-symbol": ""
+          },
+          "geometry": {
+            "type": "Point",
+            "coordinates": [
+              -122.43284225463867,
+              37.78943798147498
+            ]
+          }
+        }
+      ]
+    };
+    geoJSON(brGeoJson).addTo(map);
 
     // layer controls for user selection between satellite and map
     layerControl.addBaseLayer(tileLayer, "map");
@@ -495,3 +572,4 @@ function MapPanel(props: MapPanelProps): JSX.Element {
 }
 
 export default MapPanel;
+
